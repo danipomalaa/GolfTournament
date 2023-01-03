@@ -82,7 +82,7 @@ entryPlayer arg = do
                                     hc <- getLine
                                     regNumber <- rollDice
                                     print ("RegisterNumber: "++ show regNumber ," Name:"++name++ " Gender:"++gender++" HC:"++hc)
-                                    appendFile "player.txt" ("\n"++ show regNumber++" "++(removeSpaceInput name)++" "++gender++" "++hc)
+                                    appendFile "player.txt" (show regNumber++" "++(removeSpaceInput name)++" "++gender++" "++hc++"\n")
                                     entryPlayer arg
                         ("2") -> do
                                     dataPlayer <- readFile "player.txt"
@@ -149,6 +149,10 @@ pairingList arg = do
                                     dataPlayer <- readFile "player.txt"
                                     let countMaxGroup = (length $ convertTextToArray dataPlayer) `div` 4   
                                     putStrLn ("Total Group :"++ show (countMaxGroup))
+                                    -- Clear Directory -----
+                                    -- removeDirectoryWithFiles "group"
+                                    -- Create Directory -----
+                                    createDirectory "group"
                                     clearDrawData 0 countMaxGroup
                                     drawData 0 countMaxGroup ( orderPlayerList dataPlayer >>= (\x-> x ++ []) )  
                                     pairingList arg
@@ -161,13 +165,21 @@ pairingList arg = do
                         ("3") -> putStrLn "Back To Main Menu"
                         (_) -> pairingList arg
 
+-- removeDirectoryWithFiles :: String -> IO()
+-- removeDirectoryWithFiles [] = return()
+-- removeDirectoryWithFiles arg = do
+--                                 dataPairing <- listDirectory "./group"
+--                                 map removeFile dataPairing
+--                                 putStrLn "Successfull deleted file and directory group pairing"
+                                 
+
 printPairingList :: [String] -> IO()
 printPairingList [] = do
                         putStrLn "-----------------------------------" 
                         return ()
 printPairingList (x:xs) = do
                         dataPairing <- readFile ("group/"++ x)
-                        putStrLn ("-------Data Player "++x ++ "----")
+                        putStrLn ("-------Pairing "++x ++ "----")
                         putStrLn ((words dataPairing) >>= (\arg-> arg++"\n"))
                         printPairingList xs
 
