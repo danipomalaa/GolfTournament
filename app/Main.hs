@@ -1,6 +1,7 @@
 module Main where
 
 import System.Random
+import System.Directory
 
 --------------------------- Main Menu ----------------------------------------
 
@@ -55,7 +56,6 @@ removeSpaceInput (x:xs) = if x ==' ' then removeSpaceInput xs
 --------------------------- End Other Function ----------------------------------------
                     
 data EntryList = EntryList {regNumber:: Int, name:: String, gender:: String, hc:: Int } deriving Show
-data FlightList = FlightList {flight:: String, player:: [EntryList] } deriving Show
 
 ---------------------------- Registration Menu -----------------------------
 
@@ -154,11 +154,22 @@ pairingList arg = do
                                     pairingList arg
                         ("2") -> do
                                     putStrLn "====List Pairing ==="
-                                    dataPairing <- readFile "entries.txt"
-                                    print (lines dataPairing)
+                                    dataPairing <- listDirectory "./group"
+                                    -- print dataPairing
+                                    printPairingList dataPairing
                                     pairingList arg
                         ("3") -> putStrLn "Back To Main Menu"
                         (_) -> pairingList arg
+
+printPairingList :: [String] -> IO()
+printPairingList [] = do
+                        putStrLn "-----------------------------------" 
+                        return ()
+printPairingList (x:xs) = do
+                        dataPairing <- readFile ("group/"++ x)
+                        putStrLn ("-------Data Player "++x ++ "----")
+                        putStrLn ((words dataPairing) >>= (\arg-> arg++"\n"))
+                        printPairingList xs
 
 orderPlayerList :: String -> [[String]]
 orderPlayerList " " = []
@@ -174,6 +185,8 @@ clearDrawData _ 0 = putStrLn "Selesai"
 clearDrawData index group = do 
                                 writeFile ("group/group"++(show (index+1))++".txt") ""  
                                 clearDrawData (index+1) (group-1)
+
+data FlightList = FlightList {groupNumber:: Int, player:: [EntryList] } deriving Show
 
 drawData :: Int -> Int -> [String] -> IO()
 drawData _ 0 _= putStrLn "Data Tidak Ada"

@@ -20,6 +20,16 @@
   (major1) == 4 && (major2) <  16 || \
   (major1) == 4 && (major2) == 16 && (minor) <= 3)
 #endif /* MIN_VERSION_base */
+/* package directory-1.3.6.2 */
+#ifndef VERSION_directory
+#define VERSION_directory "1.3.6.2"
+#endif /* VERSION_directory */
+#ifndef MIN_VERSION_directory
+#define MIN_VERSION_directory(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  3 || \
+  (major1) == 1 && (major2) == 3 && (minor) <= 6)
+#endif /* MIN_VERSION_directory */
 /* package random-1.2.1.1 */
 #ifndef VERSION_random
 #define VERSION_random "1.2.1.1"
