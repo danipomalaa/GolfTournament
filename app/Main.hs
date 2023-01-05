@@ -156,22 +156,6 @@ pairingList arg = do
                     putStrLn "=================================== "
                     pilih <- getLine
                     case (pilih) of 
-                        ("0") -> do
-                                    dataPlayer <- readFile "player.txt"
-                                    putStrLn "====List Player==="
-                                    putStrLn ("Total Player : "++ show (length $ convertTextToArray dataPlayer)++ " Person")
-
-                                    print ("Flight A->", (orderPlayerList dataPlayer)!!0 )
-                                    print ("Flight B->", (orderPlayerList dataPlayer)!!1)
-                                    print ("Flight C->", (orderPlayerList dataPlayer)!!2)
-
-                                    writeFile "entries/entriesA.txt" ""
-                                    writeFile "entries/entriesB.txt" ""
-                                    writeFile "entries/entriesC.txt" ""
-                                    appendFile "entries/entriesA.txt" (unwords ((orderPlayerList dataPlayer)!!0))
-                                    appendFile "entries/entriesB.txt" (unwords ((orderPlayerList dataPlayer)!!1))
-                                    appendFile "entries/entriesC.txt" (unwords ((orderPlayerList dataPlayer)!!2))
-                                    pairingList arg
                         ("1") -> do
                                     putStrLn "====Draw Pairing List==="
                                     dataPlayer <- readFile "player.txt"
