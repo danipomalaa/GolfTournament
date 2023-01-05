@@ -76,33 +76,61 @@ entryPlayer arg = do
                                     putStrLn "====Add Player==="
                                     putStrLn "Insert Your Name : "
                                     name <- getLine 
-                                    putStrLn "Insert Your Gender : "
+                                    putStrLn "Insert Your Gender (Men or Ladies) : "
                                     gender <- getLine
-                                    putStrLn "Insert Your HC : "
+                                    putStrLn "Insert Your HC : (1 - 28)  "
+                                    putStrLn "***********Note************"
+                                    putStrLn "Fligth A from HC 1 to 10"
+                                    putStrLn "Fligth B from HC 11 to 19"
+                                    putStrLn "Fligth C from HC 20 to 28"
+                                    putStrLn "***************************"
                                     hc <- getLine
                                     regNumber <- rollDice
-                                    print ("RegisterNumber: "++ show regNumber ," Name:"++name++ " Gender:"++gender++" HC:"++hc)
-                                    appendFile "player.txt" (show regNumber++" "++(removeSpaceInput name)++" "++gender++" "++hc++"\n")
+                                    putStrLn "--------Please Check your entry-----"
+                                    putStrLn ("1. RegisterNumber: "++ show regNumber ++"\n2. Name:"++name++ "\n3. Gender:"++gender++"\n4. HC:"++hc)
+                                    putStrLn "------------------------------------"
+                                    putStrLn "if your data is correct, please press `1` or press `any key` for cancel process"
+                                    saveData <- getLine
+                                    if (saveData == "1") then
+                                        do
+                                            appendFile "player.txt" (show regNumber++" "++(removeSpaceInput name)++" "++gender++" "++hc++"\n")
+                                            putStrLn "Save Data"
+                                    else 
+                                        putStrLn "Cancel"
+                                    previewData
                                     entryPlayer arg
                         ("2") -> do
-                                    dataPlayer <- readFile "player.txt"
-                                    putStrLn "====List Player==="
-                                    print (dataPlayer)
-                                    putStrLn (printEntryList $ convertTextToArray dataPlayer)
-                                    putStrLn ("Total Player : "++ show (length $ convertTextToArray dataPlayer)++ " Person")
+                                    previewData
                                     entryPlayer arg
                         ("3") -> do
                                     writeFile "player.txt" ""
                         ("4") -> putStrLn "Back To Main Menu"
                         (_) -> entryPlayer arg
 
+previewData :: IO()
+previewData = do
+                dataPlayer <- readFile "player.txt"
+                putStrLn "===========List Player================"
+                -- print (dataPlayer)
+                putStrLn "------------------------------------------------"
+                putStrLn "|No|Reg|Name\t\t\t|Gender\t|HC\t|"
+                putStrLn "------------------------------------------------"
+                printEntryList 0 $ convertTextToArray dataPlayer
+                putStrLn "================================================"
+                putStrLn ("\t\tTotal Player : "++ show (length $ convertTextToArray dataPlayer)++ " Person")
+                putStrLn "================================================"
+
 sortEntryList :: [[String]] -> [EntryList]
 sortEntryList [] = []
 sortEntryList (arg:xs) = (EntryList { regNumber=(read (arg!!0)), name = arg!!1, gender = arg!!2, hc= (read (arg!!3))}) : sortEntryList xs
 
-printEntryList :: [EntryList] -> String
-printEntryList [] = "\n"
-printEntryList (x:xs) = "\n<RegNo: "++ show (regNumber x) ++"><Name: "++ (name x) ++ "> <Gender:"++ (gender x) ++ "> <HC:"++ (show (hc x)) ++ ">" ++ printEntryList xs
+printEntryList :: Int -> [EntryList] -> IO()
+printEntryList _ [] = return()
+printEntryList index (x:xs) =  do 
+                                    let indexNo = if ((index+1)<10) then "0"++(show (index+1)) else show (index+1)
+                                    let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" else (name x) ++ "\t\t"
+                                    putStrLn ("|"++indexNo++ "|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|")
+                                    printEntryList (index+1) xs
 
 extractFlightList :: [EntryList] -> Int -> Int -> [String]
 extractFlightList arg val1 val2 = map (\z-> show (name z)) $ filter (\x-> (hc x) > val1 && (hc x)<= val2) arg
@@ -150,9 +178,17 @@ pairingList arg = do
                                     let countMaxGroup = (length $ convertTextToArray dataPlayer) `div` 4   
                                     putStrLn ("Total Group :"++ show (countMaxGroup))
                                     -- Clear Directory -----
-                                    -- removeDirectoryWithFiles "group"
+                                    directoryData <- listDirectory "."
+                                    if("group" `elem` directoryData) then
+                                        do
+                                            putStrLn "Folder group is Exist"
+                                            filesGroup <- listDirectory "./group"
+                                            removeDirectoryWithFiles filesGroup
+                                    else 
+                                        do
+                                            putStrLn "Folder group is not Exist"
+                                            createDirectory "group"
                                     -- Create Directory -----
-                                    createDirectory "group"
                                     clearDrawData 0 countMaxGroup
                                     drawData 0 countMaxGroup ( orderPlayerList dataPlayer >>= (\x-> x ++ []) )  
                                     pairingList arg
@@ -165,13 +201,11 @@ pairingList arg = do
                         ("3") -> putStrLn "Back To Main Menu"
                         (_) -> pairingList arg
 
--- removeDirectoryWithFiles :: String -> IO()
--- removeDirectoryWithFiles [] = return()
--- removeDirectoryWithFiles arg = do
---                                 dataPairing <- listDirectory "./group"
---                                 map removeFile dataPairing
---                                 putStrLn "Successfull deleted file and directory group pairing"
-                                 
+removeDirectoryWithFiles :: [String] -> IO()
+removeDirectoryWithFiles [] = return()
+removeDirectoryWithFiles (x:xs) = do
+                                    removeFile ("./group/"++x)
+                                    removeDirectoryWithFiles xs
 
 printPairingList :: [String] -> IO()
 printPairingList [] = do
