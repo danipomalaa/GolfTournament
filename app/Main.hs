@@ -2,6 +2,7 @@ module Main where
 
 import System.Random
 import System.Directory
+import Data.List
 
 --------------------------- Main Menu ----------------------------------------
 
@@ -174,16 +175,31 @@ pairingList arg = do
                                             createDirectory "group"
                                     -- Create Directory -----
                                     clearDrawData 0 countMaxGroup
-                                    drawData 0 countMaxGroup ( orderPlayerList dataPlayer >>= (\x-> x ++ []) )  
+                                    orderPlayer <- orderPlayerList dataPlayer
+                                    drawData 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
+
+                                    viewPairingList
                                     pairingList arg
                         ("2") -> do
-                                    putStrLn "====List Pairing ==="
-                                    dataPairing <- listDirectory "./group"
-                                    -- print dataPairing
-                                    printPairingList dataPairing
+                                    viewPairingList
                                     pairingList arg
                         ("3") -> putStrLn "Back To Main Menu"
                         (_) -> pairingList arg
+
+viewPairingList :: IO()
+viewPairingList = do
+                    putStrLn "====List Pairing ==="
+                    dataPairing <- listDirectory "./group"
+                    printPairingList 0 dataPairing
+
+randomIntList :: Int -> IO [Int]
+randomIntList n = do
+                     gen <- newStdGen
+                     return (take n (randomRs (100, 999) gen))
+
+createTupple :: [Int] -> [String] -> [(Int,String)]
+createTupple [] [] = []
+createTupple (x:xs) (y:ys) = [(x,y)] ++ (createTupple xs ys)   
 
 removeDirectoryWithFiles :: [String] -> IO()
 removeDirectoryWithFiles [] = return()
@@ -191,24 +207,52 @@ removeDirectoryWithFiles (x:xs) = do
                                     removeFile ("./group/"++x)
                                     removeDirectoryWithFiles xs
 
-printPairingList :: [String] -> IO()
-printPairingList [] = do
-                        putStrLn "-----------------------------------" 
-                        return ()
-printPairingList (x:xs) = do
+printPairingList :: Int -> [String] -> IO()
+printPairingList _ [] = return ()
+printPairingList index (x:xs) = do
                         dataPairing <- readFile ("group/"++ x)
-                        putStrLn ("-------Pairing "++x ++ "----")
-                        putStrLn ((words dataPairing) >>= (\arg-> arg++"\n"))
-                        printPairingList xs
+                        putStrLn ("Group "++ (show (index+1)))
+                        putStrLn ("---------------------------------")
+                        putStrLn ("|No|Nama\t\t\t|")
+                        putStrLn ("---------------------------------")
+                        putStrLn (tablePairing 0 (words dataPairing))
+                        putStrLn ("---------------------------------")
+                        -- putStrLn ((words dataPairing) >>= (\arg-> arg++"\n"))
+                        printPairingList (index+1) xs
 
-orderPlayerList :: String -> [[String]]
-orderPlayerList " " = []
+tablePairing :: Int -> [String] -> String
+tablePairing _ [] = ""
+tablePairing index (x:xs) = "|0"++show (index+1)++"|"++x++"\t\t\t|\n" ++ tablePairing (index+1) xs
+
+                                
+orderPlayerList :: String -> IO [[String]]
+orderPlayerList " " = return []
 orderPlayerList dataPlayer = 
     do
+
         let flightA = (extractFlightList (convertTextToArray dataPlayer) 1 10)
+        randomIntA <- randomIntList $ length flightA
+        let orderFligthA = (sort $ createTupple randomIntA flightA) >>= (\(a,b)-> [b])
+
         let flightB = (extractFlightList (convertTextToArray dataPlayer) 11 20)
+        randomIntB <- randomIntList $ length flightB
+        let orderFligthB = (sort $ createTupple randomIntB flightB) >>= (\(a,b)-> [b])
+
         let flightC = (extractFlightList (convertTextToArray dataPlayer) 21 30)
-        ([flightA]++[flightB]++[flightC])
+        randomIntC <- randomIntList $ length flightC
+        let orderFligthC = (sort $ createTupple randomIntC flightC) >>= (\(a,b)-> [b])
+        putStrLn "Flight A : "
+        print flightA
+        print orderFligthA
+        
+        putStrLn "Flight B : "
+        print flightB
+        print orderFligthB
+        putStrLn "Flight C : "
+        print flightC
+        print orderFligthC
+
+        return ([orderFligthA]++[orderFligthB]++[orderFligthC])
 
 clearDrawData :: Int -> Int -> IO()
 clearDrawData _ 0 = putStrLn "Selesai"
@@ -224,7 +268,6 @@ drawData _ _ []= putStrLn "Selesai"
 drawData index group (x:xs)= 
                             do 
                                 appendFile ("group/group"++(show (index+1))++".txt")  (x++" ")
-                                print ("Group-"++show (index+1)++ " "++x )
 
                                 if( (index+1) < group) then drawData (index+1) group xs
                                 else drawData 0 group xs
