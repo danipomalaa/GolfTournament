@@ -56,7 +56,7 @@ removeSpaceInput (x:xs) = if x ==' ' then removeSpaceInput xs
 
 --------------------------- End Other Function ----------------------------------------
                     
-data EntryList = EntryList {regNumber:: Int, name:: String, gender:: String, hc:: Int } deriving Show
+data EntryList = EntryList {regNumber:: Int, name:: String, gender:: String, hc:: Int, flight:: String } deriving Show
 
 ---------------------------- Registration Menu -----------------------------
 
@@ -86,15 +86,19 @@ entryPlayer arg = do
                                     putStrLn "Fligth C from HC 20 to 28"
                                     putStrLn "***************************"
                                     hc <- getLine
+
+                                    let flight = if (read hc) >=1 && (read hc) <10 then "A"
+                                                 else if (read hc) >=11 && (read hc) <20 then "B"
+                                                 else "C"
                                     regNumber <- rollDice
                                     putStrLn "--------Please Check your entry-----"
-                                    putStrLn ("1. RegisterNumber: "++ show regNumber ++"\n2. Name:"++name++ "\n3. Gender:"++gender++"\n4. HC:"++hc)
+                                    putStrLn ("1. RegisterNumber: "++ show regNumber ++"\n2. Name:"++name++ "\n3. Gender:"++gender++"\n4. HC:"++hc++"\n5.Flight: "++flight)
                                     putStrLn "------------------------------------"
                                     putStrLn "if your data is correct, please press `1` or press `any key` for cancel process"
                                     saveData <- getLine
                                     if (saveData == "1") then
                                         do
-                                            appendFile "player.txt" (show regNumber++" "++(removeSpaceInput name)++" "++gender++" "++hc++"\n")
+                                            appendFile "player.txt" (show regNumber++" "++(removeSpaceInput name)++" "++gender++" "++hc++" "++flight++ "\n")
                                             putStrLn "Save Data"
                                     else 
                                         putStrLn "Cancel"
@@ -113,28 +117,31 @@ previewData = do
                 dataPlayer <- readFile "player.txt"
                 putStrLn "===========List Player================"
                 -- print (dataPlayer)
-                putStrLn "------------------------------------------------"
-                putStrLn "|No|Reg|Name\t\t\t|Gender\t|HC\t|"
-                putStrLn "------------------------------------------------"
+                putStrLn "------------------------------------------------------"
+                putStrLn "|No|Reg|Name\t\t\t|Gender\t|HC\t|Flight |"
+                putStrLn "------------------------------------------------------"
                 printEntryList 0 $ convertTextToArray dataPlayer
-                putStrLn "================================================"
+                putStrLn "======================================================"
                 putStrLn ("\t\tTotal Player : "++ show (length $ convertTextToArray dataPlayer)++ " Person")
-                putStrLn "================================================"
+                putStrLn "======================================================"
 
 sortEntryList :: [[String]] -> [EntryList]
 sortEntryList [] = []
-sortEntryList (arg:xs) = (EntryList { regNumber=(read (arg!!0)), name = arg!!1, gender = arg!!2, hc= (read (arg!!3))}) : sortEntryList xs
+sortEntryList (arg:xs) = (EntryList { regNumber=(read (arg!!0)), name = arg!!1, gender = arg!!2, hc= (read (arg!!3)), flight= arg!!4}) : sortEntryList xs
 
 printEntryList :: Int -> [EntryList] -> IO()
 printEntryList _ [] = return()
 printEntryList index (x:xs) =  do 
                                     let indexNo = if ((index+1)<10) then "0"++(show (index+1)) else show (index+1)
                                     let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" else (name x) ++ "\t\t"
-                                    putStrLn ("|"++indexNo++ "|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|")
+                                    putStrLn ("|"++indexNo++ "|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|"++ (flight x)++"\t|")
                                     printEntryList (index+1) xs
 
 extractFlightList :: [EntryList] -> Int -> Int -> [String]
 extractFlightList arg val1 val2 = map (\z-> show (name z)) $ filter (\x-> (hc x) > val1 && (hc x)<= val2) arg
+
+getFlightList :: [EntryList] -> Int -> Int -> [EntryList]
+getFlightList arg val1 val2 = filter (\x-> (hc x) > val1 && (hc x)<= val2) arg
 
 convertTextToArray :: String -> [EntryList]
 convertTextToArray "" = []
@@ -175,8 +182,8 @@ pairingList arg = do
                                             createDirectory "group"
                                     -- Create Directory -----
                                     clearDrawData 0 countMaxGroup
-                                    orderPlayer <- orderPlayerList dataPlayer
-                                    drawData 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
+                                    orderPlayer <- orderPlayerList' dataPlayer
+                                    drawData' 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
 
                                     viewPairingList
                                     pairingList arg
@@ -199,7 +206,11 @@ randomIntList n = do
 
 createTupple :: [Int] -> [String] -> [(Int,String)]
 createTupple [] [] = []
-createTupple (x:xs) (y:ys) = [(x,y)] ++ (createTupple xs ys)   
+createTupple (x:xs) (y:ys) = [(x,y)] ++ (createTupple xs ys) 
+
+createTupple' :: [Int] -> [EntryList] -> [(Int,Int)]
+createTupple' [] [] = []
+createTupple' (x:xs) (y:ys) = [(x, (regNumber y))] ++ (createTupple' xs ys) 
 
 removeDirectoryWithFiles :: [String] -> IO()
 removeDirectoryWithFiles [] = return()
@@ -210,19 +221,33 @@ removeDirectoryWithFiles (x:xs) = do
 printPairingList :: Int -> [String] -> IO()
 printPairingList _ [] = return ()
 printPairingList index (x:xs) = do
-                        dataPairing <- readFile ("group/"++ x)
+                        dataPlayerString <- readFile "player.txt"
+                        let dataPlayer = convertTextToArray dataPlayerString
+                        dataPairingString <- readFile ("group/"++ x)
+                        let dataPairing = words dataPairingString
                         putStrLn ("Group "++ (show (index+1)))
-                        putStrLn ("---------------------------------")
-                        putStrLn ("|No|Nama\t\t\t|")
-                        putStrLn ("---------------------------------")
-                        putStrLn (tablePairing 0 (words dataPairing))
-                        putStrLn ("---------------------------------")
+                        putStrLn ("---------------------------------------------------------")
+                        putStrLn "|No|Reg|Name\t\t\t|Gender\t|HC\t|Flight |"
+                        putStrLn ("---------------------------------------------------------")
+                        let dataGroup = dataPairing >>= (\y-> filter (\x-> (regNumber x) == (read y)) dataPlayer)
+                        -- print dataGroup
+                        -- putStrLn (tablePairing 0 dataPairing)
+                        tablePairing' 0 dataGroup
+                        putStrLn ("---------------------------------------------------------")
                         -- putStrLn ((words dataPairing) >>= (\arg-> arg++"\n"))
                         printPairingList (index+1) xs
 
 tablePairing :: Int -> [String] -> String
 tablePairing _ [] = ""
 tablePairing index (x:xs) = "|0"++show (index+1)++"|"++x++"\t\t\t|\n" ++ tablePairing (index+1) xs
+
+tablePairing' :: Int -> [EntryList] -> IO()
+tablePairing' _ [] = return()
+tablePairing' index (x:xs) = do 
+                                let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" else (name x) ++ "\t\t"
+                                putStrLn ("|0"++show (index+1)++"|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|"++ (flight x)++"\t|")
+                                tablePairing' (index+1) xs
+    -- "|0"++show (index+1)++"|"++ (name x)++"\t\t\t|"++ (flight x) ++"\t|"++ (show (hc x))++"\t|\n" ++ tablePairing' (index+1) xs
 
                                 
 orderPlayerList :: String -> IO [[String]]
@@ -241,6 +266,7 @@ orderPlayerList dataPlayer =
         let flightC = (extractFlightList (convertTextToArray dataPlayer) 21 30)
         randomIntC <- randomIntList $ length flightC
         let orderFligthC = (sort $ createTupple randomIntC flightC) >>= (\(a,b)-> [b])
+
         putStrLn "Flight A : "
         print flightA
         print orderFligthA
@@ -253,6 +279,38 @@ orderPlayerList dataPlayer =
         print orderFligthC
 
         return ([orderFligthA]++[orderFligthB]++[orderFligthC])
+
+orderPlayerList' :: String -> IO [[Int]]
+orderPlayerList' " " = return []
+orderPlayerList' dataPlayer = 
+    do
+
+        let flightA = (getFlightList (convertTextToArray dataPlayer) 1 10)
+        
+        randomIntA <- randomIntList $ length flightA
+        -- print flightA
+        -- print randomIntA
+        let orderFligthA = (sort $ createTupple' randomIntA flightA) >>= (\(a,b)-> [b])
+        let dataTypeOrderFlightA = orderFligthA >>= (\y-> filter (\x-> (regNumber x) == y) flightA) 
+
+        let flightB = (getFlightList (convertTextToArray dataPlayer) 10 20)
+        randomIntB <- randomIntList $ length flightB
+
+        -- print flightB
+        -- print randomIntB
+        let orderFligthB = (sort $ createTupple' randomIntB flightB) >>= (\(a,b)-> [b])
+        let dataTypeOrderFlightB = orderFligthB >>= (\y-> filter (\x-> (regNumber x) == y) flightB) 
+
+        let flightC = (getFlightList (convertTextToArray dataPlayer) 20 28)
+        randomIntC <- randomIntList $ length flightC
+
+        -- print flightC
+        -- print randomIntC
+        let orderFligthC = (sort $ createTupple' randomIntC flightC) >>= (\(a,b)-> [b])
+        let dataTypeOrderFlightC = orderFligthC >>= (\y-> filter (\x-> (regNumber x) == y) flightC) 
+
+        return ([orderFligthA]++[orderFligthB]++[orderFligthC])
+
 
 clearDrawData :: Int -> Int -> IO()
 clearDrawData _ 0 = putStrLn "Selesai"
@@ -271,5 +329,15 @@ drawData index group (x:xs)=
 
                                 if( (index+1) < group) then drawData (index+1) group xs
                                 else drawData 0 group xs
+
+drawData' :: Int -> Int -> [Int] -> IO()
+drawData' _ 0 _= putStrLn "Data Tidak Ada"
+drawData' _ _ []= putStrLn "Selesai"
+drawData' index group (x:xs)= 
+                            do 
+                                appendFile ("group/group"++(show (index+1))++".txt")  ((show x)++" ")
+                                if( (index+1) < group) then drawData' (index+1) group xs
+                                else drawData' 0 group xs
+-- orderFligthA >>= (\y-> filter (\x-> (regNumber x) == y) flightA) 
 
 ---------------------------- End Pairing Menu -----------------------------
