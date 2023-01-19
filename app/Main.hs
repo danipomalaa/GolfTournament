@@ -50,6 +50,11 @@ removeSpaceInput [] = []
 removeSpaceInput (x:xs) = if x ==' ' then removeSpaceInput xs
                     else [x] ++ removeSpaceInput xs
 
+removeTextExtentionFile :: String -> String
+removeTextExtentionFile [] = []
+removeTextExtentionFile (x:xs) = if x =='.' || x =='t' || x =='x' || x =='t' then removeTextExtentionFile xs
+                    else [x] ++ removeTextExtentionFile xs
+
 --------------------------- End Other Function ----------------------------------------
                     
 data EntryList = EntryList {regNumber:: Int, name:: String, gender:: String, hc:: Int, flight:: String } deriving Show
@@ -287,9 +292,10 @@ pairingList arg = do
 
 viewPairingList :: IO()
 viewPairingList = do
-                    putStrLn "====List Pairing ==="
+                    putStrLn "=============== List Pairing ================="
                     dataPairing <- listDirectory "./group"
                     printPairingList 0 dataPairing
+
 
 printPairingList :: Int -> [String] -> IO()
 printPairingList _ [] = return ()
@@ -298,7 +304,7 @@ printPairingList index (x:xs) = do
                         let dataPlayer = convertTextToArray dataPlayerString
                         dataPairingString <- readFile ("group/"++ x)
                         let dataPairing = words dataPairingString
-                        putStrLn ("Group "++ (show (index+1)))
+                        putStrLn (removeTextExtentionFile x)
                         putStrLn ("---------------------------------------------------------")
                         putStrLn "|No|Reg |Name\t\t\t|Gender\t|HC\t|Flight |"
                         putStrLn ("---------------------------------------------------------")
