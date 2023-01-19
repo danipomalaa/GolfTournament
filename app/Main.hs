@@ -94,7 +94,7 @@ registrationPlayer arg = do
                                     registrationPlayer arg
                         ("3") -> do
                                     previewData
-                                    putStr "Input Reg Number : "
+                                    putStrLn "Input Reg Number : "
                                     editRegNumber <- getLine
 
                                     dataPlayer <- readFile "player.txt"
@@ -106,7 +106,7 @@ registrationPlayer arg = do
 
                         ("4") -> do
                                     previewData
-                                    putStr "Input Reg Number : "
+                                    putStrLn "Input Reg Number : "
                                     editRegNumber <- getLine
 
                                     dataPlayer <- readFile "player.txt"
@@ -118,16 +118,16 @@ registrationPlayer arg = do
 
 entryData :: Int -> Int -> IO(EntryList)
 entryData 1 _ = do
-                putStr "Insert Your Name : "
+                putStrLn "Insert Your Name : "
                 name <- getLine 
-                putStr "Insert Your Gender (Men or Ladies) : "
+                putStrLn "Insert Your Gender (Men or Ladies) : "
                 gender <- getLine
                 putStrLn "***********Flight Category************"
                 putStrLn "Fligth A from HC 1 to 10"
                 putStrLn "Fligth B from HC 11 to 19"
                 putStrLn "Fligth C from HC 20 to 28"
                 putStrLn "**************************************"
-                putStr "Insert Your HC (1 - 28) :  "
+                putStrLn "Insert Your HC (1 - 28) :  "
                 hc <- getLine
                 let flight = if (read hc) >=1 && (read hc) <10 then "A"
                                 else if (read hc) >=11 && (read hc) <20 then "B"
@@ -136,16 +136,16 @@ entryData 1 _ = do
                 let datareturn = (EntryList { regNumber= regNumber, name = name, gender = gender, hc= (read (hc)), flight= flight})
                 return datareturn
 entryData 2 arg = do
-                putStr "Insert Your Name : "
+                putStrLn "Insert Your Name : "
                 name <- getLine 
-                putStr "Insert Your Gender (Men or Ladies) : "
+                putStrLn "Insert Your Gender (Men or Ladies) : "
                 gender <- getLine
                 putStrLn "***********Flight Category************"
                 putStrLn "Fligth A from HC 1 to 10"
                 putStrLn "Fligth B from HC 11 to 19"
                 putStrLn "Fligth C from HC 20 to 28"
                 putStrLn "**************************************"
-                putStr "Insert Your HC (1 - 28) :  "
+                putStrLn "Insert Your HC (1 - 28) :  "
                 hc <- getLine
                 let flight = if (read hc) >=1 && (read hc) <10 then "A"
                                 else if (read hc) >=11 && (read hc) <20 then "B"
@@ -160,7 +160,6 @@ changeData 1 argRegNumber arg = do
                                     dataEdit <- entryData 2 argRegNumber
                                     let _data = (dataList ++ [dataEdit])
                                     let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
-                                    -- saveData _data
                                     writeFile "player.txt" dataString
                                     print ("Edit Data RegNumber "++ (show argRegNumber) ++ " success")
 changeData 2 argRegNumber arg = do
@@ -171,10 +170,6 @@ changeData 2 argRegNumber arg = do
                                     writeFile "player.txt" dataString
                                     print ("Delete Data RegNumber "++ (show argRegNumber) ++ " success")
 changeData _ _ [] = return()
-                                
-saveData :: [EntryList] -> IO(String)
-saveData [] = return("")
-saveData arg = return (arg >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))                      
 
 profileData :: Int -> IO()
 profileData 0 = return()
@@ -222,8 +217,8 @@ printEntryList index (x:xs) =  do
 extractFlightList :: [EntryList] -> Int -> Int -> [String]
 extractFlightList arg val1 val2 = map (\z-> show (name z)) $ filter (\x-> (hc x) > val1 && (hc x)<= val2) arg
 
-getFlightList :: [EntryList] -> Int -> Int -> [EntryList]
-getFlightList arg val1 val2 = filter (\x-> (hc x) > val1 && (hc x)<= val2) arg
+getFlightList :: [EntryList] -> String -> [EntryList]
+getFlightList arg val = filter (\x-> (flight x) == val) arg
 
 convertTextToArray :: String -> [EntryList]
 convertTextToArray "" = []
@@ -264,8 +259,8 @@ pairingList arg = do
                                             createDirectory "group"
                                     -- Create Directory -----
                                     clearDrawData 0 countMaxGroup
-                                    orderPlayer <- orderPlayerList' dataPlayer
-                                    drawData' 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
+                                    orderPlayer <- orderPlayerList dataPlayer
+                                    drawData 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
 
                                     viewPairingList
                                     pairingList arg
@@ -284,15 +279,11 @@ viewPairingList = do
 randomIntList :: Int -> IO [Int]
 randomIntList n = do
                      gen <- newStdGen
-                     return (take n (randomRs (100, 999) gen))
+                     return (take n (randomRs (1000, 9999) gen))
 
-createTupple :: [Int] -> [String] -> [(Int,String)]
+createTupple :: [Int] -> [EntryList] -> [(Int,Int)]
 createTupple [] [] = []
-createTupple (x:xs) (y:ys) = [(x,y)] ++ (createTupple xs ys) 
-
-createTupple' :: [Int] -> [EntryList] -> [(Int,Int)]
-createTupple' [] [] = []
-createTupple' (x:xs) (y:ys) = [(x, (regNumber y))] ++ (createTupple' xs ys) 
+createTupple (x:xs) (y:ys) = [(x, (regNumber y))] ++ (createTupple xs ys) 
 
 removeDirectoryWithFiles :: [String] -> IO()
 removeDirectoryWithFiles [] = return()
@@ -314,81 +305,46 @@ printPairingList index (x:xs) = do
                         let dataGroup = dataPairing >>= (\y-> filter (\x-> (regNumber x) == (read y)) dataPlayer)
                         -- print dataGroup
                         -- putStrLn (tablePairing 0 dataPairing)
-                        tablePairing' 0 dataGroup
+                        tablePairing 0 dataGroup
                         putStrLn ("---------------------------------------------------------")
                         -- putStrLn ((words dataPairing) >>= (\arg-> arg++"\n"))
                         printPairingList (index+1) xs
 
-tablePairing :: Int -> [String] -> String
-tablePairing _ [] = ""
-tablePairing index (x:xs) = "|0"++show (index+1)++"|"++x++"\t\t\t|\n" ++ tablePairing (index+1) xs
-
-tablePairing' :: Int -> [EntryList] -> IO()
-tablePairing' _ [] = return()
-tablePairing' index (x:xs) = do 
+tablePairing :: Int -> [EntryList] -> IO()
+tablePairing _ [] = return()
+tablePairing index (x:xs) = do 
                                 let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" else (name x) ++ "\t\t"
                                 putStrLn ("|0"++show (index+1)++"|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|"++ (flight x)++"\t|")
-                                tablePairing' (index+1) xs
-    -- "|0"++show (index+1)++"|"++ (name x)++"\t\t\t|"++ (flight x) ++"\t|"++ (show (hc x))++"\t|\n" ++ tablePairing' (index+1) xs
+                                tablePairing (index+1) xs
+    -- "|0"++show (index+1)++"|"++ (name x)++"\t\t\t|"++ (flight x) ++"\t|"++ (show (hc x))++"\t|\n" ++ tablePairing (index+1) xs
 
-                                
-orderPlayerList :: String -> IO [[String]]
+orderPlayerList :: String -> IO [[Int]]
 orderPlayerList " " = return []
 orderPlayerList dataPlayer = 
     do
 
-        let flightA = (extractFlightList (convertTextToArray dataPlayer) 1 10)
-        randomIntA <- randomIntList $ length flightA
-        let orderFligthA = (sort $ createTupple randomIntA flightA) >>= (\(a,b)-> [b])
-
-        let flightB = (extractFlightList (convertTextToArray dataPlayer) 11 20)
-        randomIntB <- randomIntList $ length flightB
-        let orderFligthB = (sort $ createTupple randomIntB flightB) >>= (\(a,b)-> [b])
-
-        let flightC = (extractFlightList (convertTextToArray dataPlayer) 21 30)
-        randomIntC <- randomIntList $ length flightC
-        let orderFligthC = (sort $ createTupple randomIntC flightC) >>= (\(a,b)-> [b])
-
-        putStrLn "Flight A : "
-        print flightA
-        print orderFligthA
-        
-        putStrLn "Flight B : "
-        print flightB
-        print orderFligthB
-        putStrLn "Flight C : "
-        print flightC
-        print orderFligthC
-
-        return ([orderFligthA]++[orderFligthB]++[orderFligthC])
-
-orderPlayerList' :: String -> IO [[Int]]
-orderPlayerList' " " = return []
-orderPlayerList' dataPlayer = 
-    do
-
-        let flightA = (getFlightList (convertTextToArray dataPlayer) 1 10)
+        let flightA = (getFlightList (convertTextToArray dataPlayer) "A")
         
         randomIntA <- randomIntList $ length flightA
         -- print flightA
         -- print randomIntA
-        let orderFligthA = (sort $ createTupple' randomIntA flightA) >>= (\(a,b)-> [b])
+        let orderFligthA = (sort $ createTupple randomIntA flightA) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightA = orderFligthA >>= (\y-> filter (\x-> (regNumber x) == y) flightA) 
 
-        let flightB = (getFlightList (convertTextToArray dataPlayer) 10 20)
+        let flightB = (getFlightList (convertTextToArray dataPlayer) "B")
         randomIntB <- randomIntList $ length flightB
 
         -- print flightB
         -- print randomIntB
-        let orderFligthB = (sort $ createTupple' randomIntB flightB) >>= (\(a,b)-> [b])
+        let orderFligthB = (sort $ createTupple randomIntB flightB) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightB = orderFligthB >>= (\y-> filter (\x-> (regNumber x) == y) flightB) 
 
-        let flightC = (getFlightList (convertTextToArray dataPlayer) 20 28)
+        let flightC = (getFlightList (convertTextToArray dataPlayer) "C")
         randomIntC <- randomIntList $ length flightC
 
         -- print flightC
         -- print randomIntC
-        let orderFligthC = (sort $ createTupple' randomIntC flightC) >>= (\(a,b)-> [b])
+        let orderFligthC = (sort $ createTupple randomIntC flightC) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightC = orderFligthC >>= (\y-> filter (\x-> (regNumber x) == y) flightC) 
 
         return ([orderFligthA]++[orderFligthB]++[orderFligthC])
@@ -402,24 +358,13 @@ clearDrawData index group = do
 
 data FlightList = FlightList {groupNumber:: Int, player:: [EntryList] } deriving Show
 
-drawData :: Int -> Int -> [String] -> IO()
+drawData :: Int -> Int -> [Int] -> IO()
 drawData _ 0 _= putStrLn "Data Tidak Ada"
 drawData _ _ []= putStrLn "Selesai"
 drawData index group (x:xs)= 
                             do 
-                                appendFile ("group/group"++(show (index+1))++".txt")  (x++" ")
-
+                                appendFile ("group/group"++(show (index+1))++".txt")  ((show x)++" ")
                                 if( (index+1) < group) then drawData (index+1) group xs
                                 else drawData 0 group xs
-
-drawData' :: Int -> Int -> [Int] -> IO()
-drawData' _ 0 _= putStrLn "Data Tidak Ada"
-drawData' _ _ []= putStrLn "Selesai"
-drawData' index group (x:xs)= 
-                            do 
-                                appendFile ("group/group"++(show (index+1))++".txt")  ((show x)++" ")
-                                if( (index+1) < group) then drawData' (index+1) group xs
-                                else drawData' 0 group xs
--- orderFligthA >>= (\y-> filter (\x-> (regNumber x) == y) flightA) 
 
 ---------------------------- End Pairing Menu -----------------------------
