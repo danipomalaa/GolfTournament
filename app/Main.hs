@@ -13,39 +13,37 @@ main = do
         putStrLn "Please choose menu in below"
         putStrLn "1. Registration Player"
         putStrLn "2. Pairing List"
-        putStrLn "3. Score Sheet"
-        putStrLn "4. Leader Board"
-        putStrLn "5. Exit"
+        -- putStrLn "3. Score Sheet"
+        -- putStrLn "4. Leader Board"
+        putStrLn "3. Exit"
         putStrLn "=================================== "
+        putStr "Your choose is : "
         pilih <- getLine
         case (pilih) of
             ("1") -> do
-                        -- putStrLn "Your menu is Registration Player "
-                        registrationPlayer "Registration Player"
+                        registrationPlayer "Registration"
                         main
             ("2") -> do 
-                        -- putStrLn "Your menu is Pairing List "
                         pairingList "Pairing List"
                         main
-            ("3") -> do 
-                        -- putStrLn "Your menu is Score Sheet "
-                        registrationPlayer "Score Sheet"
-                        main
-            ("4") -> do
-                        -- putStrLn "Your menu is Leader Board "
-                        registrationPlayer "Leader Board"
-                        main
-            ("5") -> do
+            -- ("3") -> do 
+            --             registrationPlayer "Score Sheet"
+            --             main
+            -- ("4") -> do
+            --             registrationPlayer "Leader Board"
+            --             main
+            ("3") -> do
                         -- putStrLn "Your menu is Exit Application \n"
                         putStrLn "Thank you for using this application"
                         putStrLn "=============Bye bye ==============="
+            (_) -> main
 
 --------------------------- End Main Menu ----------------------------------------
 
 --------------------------- Other Function ----------------------------------------
 
 rollDice :: IO Int
-rollDice = getStdRandom (randomR (100,999))
+rollDice = getStdRandom (randomR (1000,9999))
 
 removeSpaceInput :: String -> String
 removeSpaceInput [] = []
@@ -70,6 +68,7 @@ registrationPlayer arg = do
                     putStrLn "4. Delete Player"
                     putStrLn "5. Back To Main Menu"
                     putStrLn "=================================== "
+                    putStr "Your choose is : "
                     pilih <- getLine
                     case (pilih) of 
                         ("1") -> do
@@ -88,9 +87,13 @@ registrationPlayer arg = do
                                     else 
                                         putStrLn "Cancel"
                                     previewData
+                                    putStrLn "Press any key to continue...."
+                                    getLine
                                     registrationPlayer arg
                         ("2") -> do
                                     previewData
+                                    putStrLn "Press any key to continue...."
+                                    getLine
                                     registrationPlayer arg
                         ("3") -> do
                                     previewData
@@ -102,7 +105,9 @@ registrationPlayer arg = do
 
                                     changeData 1 (read editRegNumber) dataPlayerList
                                     previewData
-                                    -- writeFile "player.txt" ""
+                                    putStrLn "Press any key to continue...."
+                                    getLine
+                                    registrationPlayer arg
 
                         ("4") -> do
                                     previewData
@@ -113,46 +118,43 @@ registrationPlayer arg = do
                                     let dataPlayerList = convertTextToArray dataPlayer
                                     changeData 2 0 dataPlayerList
                                     previewData
+                                    putStrLn "Press any key to continue...."
+                                    getLine
+                                    registrationPlayer arg
                         ("5") -> putStrLn "Back To Main Menu"
                         (_) -> registrationPlayer arg
 
 entryData :: Int -> Int -> IO(EntryList)
-entryData 1 _ = do
-                putStrLn "Insert Your Name : "
-                name <- getLine 
-                putStrLn "Insert Your Gender (Men or Ladies) : "
-                gender <- getLine
-                putStrLn "***********Flight Category************"
-                putStrLn "Fligth A from HC 1 to 10"
-                putStrLn "Fligth B from HC 11 to 19"
-                putStrLn "Fligth C from HC 20 to 28"
-                putStrLn "**************************************"
-                putStrLn "Insert Your HC (1 - 28) :  "
-                hc <- getLine
-                let flight = if (read hc) >=1 && (read hc) <10 then "A"
-                                else if (read hc) >=11 && (read hc) <20 then "B"
-                                else "C"
-                regNumber <- rollDice
-                let datareturn = (EntryList { regNumber= regNumber, name = name, gender = gender, hc= (read (hc)), flight= flight})
-                return datareturn
-entryData 2 arg = do
-                putStrLn "Insert Your Name : "
-                name <- getLine 
-                putStrLn "Insert Your Gender (Men or Ladies) : "
-                gender <- getLine
-                putStrLn "***********Flight Category************"
-                putStrLn "Fligth A from HC 1 to 10"
-                putStrLn "Fligth B from HC 11 to 19"
-                putStrLn "Fligth C from HC 20 to 28"
-                putStrLn "**************************************"
-                putStrLn "Insert Your HC (1 - 28) :  "
-                hc <- getLine
-                let flight = if (read hc) >=1 && (read hc) <10 then "A"
-                                else if (read hc) >=11 && (read hc) <20 then "B"
-                                else "C"
-                let datareturn = (EntryList { regNumber= arg, name = name, gender = gender, hc= (read (hc)), flight= flight})
-                return datareturn
-entryData _ _ = return(EntryList{})
+entryData mode arg = do
+                if (mode == 1 || mode == 2) then
+                    do
+                        putStrLn "Insert Your Name : "
+                        name <- getLine 
+                        putStrLn "Insert Your Gender (Men or Ladies) : "
+                        gender <- getLine
+                        putStrLn "***********Flight Category************"
+                        putStrLn "Fligth A from HC 1 to 10"
+                        putStrLn "Fligth B from HC 11 to 19"
+                        putStrLn "Fligth C from HC 20 to 28"
+                        putStrLn "**************************************"
+                        putStrLn "Insert Your HC (1 - 28) :  "
+                        hc <- getLine
+                        let flight = if (read hc) >=1 && (read hc) <10 then "A"
+                                        else if (read hc) >=11 && (read hc) <20 then "B"
+                                        else "C"
+                        if (mode == 1) then 
+                            do 
+
+                                regNumber <- rollDice 
+                                let datareturn = (EntryList { regNumber= regNumber, name = name, gender = gender, hc= (read (hc)), flight= flight})
+                                return datareturn
+                        else 
+                            do
+                                let datareturn = (EntryList { regNumber= arg, name = name, gender = gender, hc= (read (hc)), flight= flight})
+                                return datareturn
+                        
+                else
+                    return(EntryList { regNumber= 0, name = "", gender = "", hc= 0, flight= ""})
 
 changeData :: Int -> Int -> [EntryList] -> IO()
 changeData 1 argRegNumber arg = do
@@ -193,10 +195,18 @@ previewData = do
                 dataPlayer <- readFile "player.txt"
                 putStrLn "===========List Player================"
                 -- print (dataPlayer)
-                putStrLn "------------------------------------------------------"
-                putStrLn "|No|Reg|Name\t\t\t|Gender\t|HC\t|Flight |"
-                putStrLn "------------------------------------------------------"
-                printEntryList 0 $ convertTextToArray dataPlayer
+                putStrLn "---------------------------------------------------------"
+                putStrLn "|No|Reg |Name\t\t\t|Gender\t|HC\t|Flight |"
+                putStrLn "---------------------------------------------------------"
+                let flightA = (getFlightList (convertTextToArray dataPlayer) "A")
+                let flightB = (getFlightList (convertTextToArray dataPlayer) "B")
+                let flightC = (getFlightList (convertTextToArray dataPlayer) "C")
+                printEntryList 0 $ flightA
+                putStrLn "---------------------------------------------------------"
+                printEntryList (length flightA) $ flightB
+                putStrLn "---------------------------------------------------------"
+                printEntryList ((length flightB) + (length flightA)) $ flightC
+                putStrLn "---------------------------------------------------------"
                 putStrLn "======================================================"
                 putStrLn ("\t\tTotal Player : "++ show (length $ convertTextToArray dataPlayer)++ " Person")
                 putStrLn "======================================================"
@@ -239,6 +249,7 @@ pairingList arg = do
                     putStrLn "2. View Pairing List"
                     putStrLn "3. Back To Main Menu"
                     putStrLn "=================================== "
+                    putStr "Your choose is : "
                     pilih <- getLine
                     case (pilih) of 
                         ("1") -> do
@@ -248,24 +259,28 @@ pairingList arg = do
                                     putStrLn ("Total Group :"++ show (countMaxGroup))
                                     -- Clear Directory -----
                                     directoryData <- listDirectory "."
-                                    if("group" `elem` directoryData) then
+                                    if("group" `elem` directoryData) then 
+                                        --Check if folder is not empty, then delete all file
                                         do
                                             putStrLn "Folder group is Exist"
                                             filesGroup <- listDirectory "./group"
                                             removeDirectoryWithFiles filesGroup
                                     else 
+                                        -- if folder is not empty then create folder group
                                         do
                                             putStrLn "Folder group is not Exist"
                                             createDirectory "group"
-                                    -- Create Directory -----
                                     clearDrawData 0 countMaxGroup
                                     orderPlayer <- orderPlayerList dataPlayer
                                     drawData 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
-
                                     viewPairingList
+                                    putStrLn "Press any key to continue...."
+                                    getLine
                                     pairingList arg
                         ("2") -> do
                                     viewPairingList
+                                    putStrLn "Press any key to continue...."
+                                    getLine
                                     pairingList arg
                         ("3") -> putStrLn "Back To Main Menu"
                         (_) -> pairingList arg
@@ -275,6 +290,29 @@ viewPairingList = do
                     putStrLn "====List Pairing ==="
                     dataPairing <- listDirectory "./group"
                     printPairingList 0 dataPairing
+
+printPairingList :: Int -> [String] -> IO()
+printPairingList _ [] = return ()
+printPairingList index (x:xs) = do
+                        dataPlayerString <- readFile "player.txt"
+                        let dataPlayer = convertTextToArray dataPlayerString
+                        dataPairingString <- readFile ("group/"++ x)
+                        let dataPairing = words dataPairingString
+                        putStrLn ("Group "++ (show (index+1)))
+                        putStrLn ("---------------------------------------------------------")
+                        putStrLn "|No|Reg |Name\t\t\t|Gender\t|HC\t|Flight |"
+                        putStrLn ("---------------------------------------------------------")
+                        let dataGroup = dataPairing >>= (\y-> filter (\x-> (regNumber x) == (read y)) dataPlayer)
+                        tablePairing 0 dataGroup
+                        putStrLn ("---------------------------------------------------------")
+                        printPairingList (index+1) xs
+
+tablePairing :: Int -> [EntryList] -> IO()
+tablePairing _ [] = return()
+tablePairing index (x:xs) = do 
+                                let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" else (name x) ++ "\t\t"
+                                putStrLn ("|0"++show (index+1)++"|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|"++ (flight x)++"\t|")
+                                tablePairing (index+1) xs
 
 randomIntList :: Int -> IO [Int]
 randomIntList n = do
@@ -291,33 +329,6 @@ removeDirectoryWithFiles (x:xs) = do
                                     removeFile ("./group/"++x)
                                     removeDirectoryWithFiles xs
 
-printPairingList :: Int -> [String] -> IO()
-printPairingList _ [] = return ()
-printPairingList index (x:xs) = do
-                        dataPlayerString <- readFile "player.txt"
-                        let dataPlayer = convertTextToArray dataPlayerString
-                        dataPairingString <- readFile ("group/"++ x)
-                        let dataPairing = words dataPairingString
-                        putStrLn ("Group "++ (show (index+1)))
-                        putStrLn ("---------------------------------------------------------")
-                        putStrLn "|No|Reg|Name\t\t\t|Gender\t|HC\t|Flight |"
-                        putStrLn ("---------------------------------------------------------")
-                        let dataGroup = dataPairing >>= (\y-> filter (\x-> (regNumber x) == (read y)) dataPlayer)
-                        -- print dataGroup
-                        -- putStrLn (tablePairing 0 dataPairing)
-                        tablePairing 0 dataGroup
-                        putStrLn ("---------------------------------------------------------")
-                        -- putStrLn ((words dataPairing) >>= (\arg-> arg++"\n"))
-                        printPairingList (index+1) xs
-
-tablePairing :: Int -> [EntryList] -> IO()
-tablePairing _ [] = return()
-tablePairing index (x:xs) = do 
-                                let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" else (name x) ++ "\t\t"
-                                putStrLn ("|0"++show (index+1)++"|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|"++ (flight x)++"\t|")
-                                tablePairing (index+1) xs
-    -- "|0"++show (index+1)++"|"++ (name x)++"\t\t\t|"++ (flight x) ++"\t|"++ (show (hc x))++"\t|\n" ++ tablePairing (index+1) xs
-
 orderPlayerList :: String -> IO [[Int]]
 orderPlayerList " " = return []
 orderPlayerList dataPlayer = 
@@ -326,24 +337,19 @@ orderPlayerList dataPlayer =
         let flightA = (getFlightList (convertTextToArray dataPlayer) "A")
         
         randomIntA <- randomIntList $ length flightA
-        -- print flightA
-        -- print randomIntA
+
         let orderFligthA = (sort $ createTupple randomIntA flightA) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightA = orderFligthA >>= (\y-> filter (\x-> (regNumber x) == y) flightA) 
 
         let flightB = (getFlightList (convertTextToArray dataPlayer) "B")
         randomIntB <- randomIntList $ length flightB
 
-        -- print flightB
-        -- print randomIntB
         let orderFligthB = (sort $ createTupple randomIntB flightB) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightB = orderFligthB >>= (\y-> filter (\x-> (regNumber x) == y) flightB) 
 
         let flightC = (getFlightList (convertTextToArray dataPlayer) "C")
         randomIntC <- randomIntList $ length flightC
 
-        -- print flightC
-        -- print randomIntC
         let orderFligthC = (sort $ createTupple randomIntC flightC) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightC = orderFligthC >>= (\y-> filter (\x-> (regNumber x) == y) flightC) 
 
