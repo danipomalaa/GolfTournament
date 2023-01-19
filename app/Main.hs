@@ -1,9 +1,7 @@
 module Main where
-
 import System.Random
 import System.Directory
 import Data.List
-
 --------------------------- Main Menu ----------------------------------------
 
 main :: IO ()
@@ -23,7 +21,7 @@ main = do
         case (pilih) of
             ("1") -> do
                         -- putStrLn "Your menu is Registration Player "
-                        entryPlayer "Registration Player"
+                        registrationPlayer "Registration Player"
                         main
             ("2") -> do 
                         -- putStrLn "Your menu is Pairing List "
@@ -31,11 +29,11 @@ main = do
                         main
             ("3") -> do 
                         -- putStrLn "Your menu is Score Sheet "
-                        entryPlayer "Score Sheet"
+                        registrationPlayer "Score Sheet"
                         main
             ("4") -> do
                         -- putStrLn "Your menu is Leader Board "
-                        entryPlayer "Leader Board"
+                        registrationPlayer "Leader Board"
                         main
             ("5") -> do
                         -- putStrLn "Your menu is Exit Application \n"
@@ -60,57 +58,140 @@ data EntryList = EntryList {regNumber:: Int, name:: String, gender:: String, hc:
 
 ---------------------------- Registration Menu -----------------------------
 
-entryPlayer :: String ->  IO()
-entryPlayer arg = do
+registrationPlayer :: String ->  IO()
+registrationPlayer arg = do
                     putStrLn "=================================== "
                     putStrLn ("         Menu "++ arg)
                     putStrLn "=================================== "
                     putStrLn "Please choose menu in below"
                     putStrLn "1. Add Player"
                     putStrLn "2. View List Player"
-                    putStrLn "3. Reset Player"
-                    putStrLn "4. Back To Main Menu"
+                    putStrLn "3. Edit Player"
+                    putStrLn "4. Delete Player"
+                    putStrLn "5. Back To Main Menu"
                     putStrLn "=================================== "
                     pilih <- getLine
                     case (pilih) of 
                         ("1") -> do
                                     putStrLn "====Add Player==="
-                                    putStrLn "Insert Your Name : "
-                                    name <- getLine 
-                                    putStrLn "Insert Your Gender (Men or Ladies) : "
-                                    gender <- getLine
-                                    putStrLn "Insert Your HC : (1 - 28)  "
-                                    putStrLn "***********Note************"
-                                    putStrLn "Fligth A from HC 1 to 10"
-                                    putStrLn "Fligth B from HC 11 to 19"
-                                    putStrLn "Fligth C from HC 20 to 28"
-                                    putStrLn "***************************"
-                                    hc <- getLine
-
-                                    let flight = if (read hc) >=1 && (read hc) <10 then "A"
-                                                 else if (read hc) >=11 && (read hc) <20 then "B"
-                                                 else "C"
-                                    regNumber <- rollDice
+                                    dataAdd <- entryData 1 0
                                     putStrLn "--------Please Check your entry-----"
-                                    putStrLn ("1. RegisterNumber: "++ show regNumber ++"\n2. Name:"++name++ "\n3. Gender:"++gender++"\n4. HC:"++hc++"\n5.Flight: "++flight)
+                                    putStrLn ("1. Reg Number \t: "++ show (regNumber dataAdd) ++"\n2. Name \t:"++ (name dataAdd)++ "\n3. Gender\t:"++ (gender dataAdd)++"\n4. HC\t\t:"++ show (hc dataAdd)++"\n5.Flight\t: "++(flight dataAdd))
                                     putStrLn "------------------------------------"
-                                    putStrLn "if your data is correct, please press `1` or press `any key` for cancel process"
+                                    putStrLn "if your data is correct, please press key `1`"
+                                    putStr "Your choose is : "
                                     saveData <- getLine
                                     if (saveData == "1") then
-                                        do
-                                            appendFile "player.txt" (show regNumber++" "++(removeSpaceInput name)++" "++gender++" "++hc++" "++flight++ "\n")
+                                        do  
+                                            appendFile "player.txt" (show (regNumber dataAdd)++" "++(removeSpaceInput (name dataAdd))++" "++ (gender dataAdd)++" "++ show (hc dataAdd)++" "++(flight dataAdd)++ "\n")
                                             putStrLn "Save Data"
                                     else 
                                         putStrLn "Cancel"
                                     previewData
-                                    entryPlayer arg
+                                    registrationPlayer arg
                         ("2") -> do
                                     previewData
-                                    entryPlayer arg
+                                    registrationPlayer arg
                         ("3") -> do
-                                    writeFile "player.txt" ""
-                        ("4") -> putStrLn "Back To Main Menu"
-                        (_) -> entryPlayer arg
+                                    previewData
+                                    putStr "Input Reg Number : "
+                                    editRegNumber <- getLine
+
+                                    dataPlayer <- readFile "player.txt"
+                                    let dataPlayerList = convertTextToArray dataPlayer
+
+                                    changeData 1 (read editRegNumber) dataPlayerList
+                                    previewData
+                                    -- writeFile "player.txt" ""
+
+                        ("4") -> do
+                                    previewData
+                                    putStr "Input Reg Number : "
+                                    editRegNumber <- getLine
+
+                                    dataPlayer <- readFile "player.txt"
+                                    let dataPlayerList = convertTextToArray dataPlayer
+                                    changeData 2 0 dataPlayerList
+                                    previewData
+                        ("5") -> putStrLn "Back To Main Menu"
+                        (_) -> registrationPlayer arg
+
+entryData :: Int -> Int -> IO(EntryList)
+entryData 1 _ = do
+                putStr "Insert Your Name : "
+                name <- getLine 
+                putStr "Insert Your Gender (Men or Ladies) : "
+                gender <- getLine
+                putStrLn "***********Flight Category************"
+                putStrLn "Fligth A from HC 1 to 10"
+                putStrLn "Fligth B from HC 11 to 19"
+                putStrLn "Fligth C from HC 20 to 28"
+                putStrLn "**************************************"
+                putStr "Insert Your HC (1 - 28) :  "
+                hc <- getLine
+                let flight = if (read hc) >=1 && (read hc) <10 then "A"
+                                else if (read hc) >=11 && (read hc) <20 then "B"
+                                else "C"
+                regNumber <- rollDice
+                let datareturn = (EntryList { regNumber= regNumber, name = name, gender = gender, hc= (read (hc)), flight= flight})
+                return datareturn
+entryData 2 arg = do
+                putStr "Insert Your Name : "
+                name <- getLine 
+                putStr "Insert Your Gender (Men or Ladies) : "
+                gender <- getLine
+                putStrLn "***********Flight Category************"
+                putStrLn "Fligth A from HC 1 to 10"
+                putStrLn "Fligth B from HC 11 to 19"
+                putStrLn "Fligth C from HC 20 to 28"
+                putStrLn "**************************************"
+                putStr "Insert Your HC (1 - 28) :  "
+                hc <- getLine
+                let flight = if (read hc) >=1 && (read hc) <10 then "A"
+                                else if (read hc) >=11 && (read hc) <20 then "B"
+                                else "C"
+                let datareturn = (EntryList { regNumber= arg, name = name, gender = gender, hc= (read (hc)), flight= flight})
+                return datareturn
+entryData _ _ = return(EntryList{})
+
+changeData :: Int -> Int -> [EntryList] -> IO()
+changeData 1 argRegNumber arg = do
+                                    let dataList = filter (\x-> not ((regNumber x)  == argRegNumber)) arg
+                                    dataEdit <- entryData 2 argRegNumber
+                                    let _data = (dataList ++ [dataEdit])
+                                    let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
+                                    -- saveData _data
+                                    writeFile "player.txt" dataString
+                                    print ("Edit Data RegNumber "++ (show argRegNumber) ++ " success")
+changeData 2 argRegNumber arg = do
+                                    let dataList = filter (\x-> not ((regNumber x) == argRegNumber)) arg
+                                    -- saveData dataList
+                                    -- let dataString = _data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")) 
+                                    let dataString = (dataList >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
+                                    writeFile "player.txt" dataString
+                                    print ("Delete Data RegNumber "++ (show argRegNumber) ++ " success")
+changeData _ _ [] = return()
+                                
+saveData :: [EntryList] -> IO(String)
+saveData [] = return("")
+saveData arg = return (arg >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))                      
+
+profileData :: Int -> IO()
+profileData 0 = return()
+profileData arg = do
+                dataPlayer <- readFile "player.txt"
+                let dataPlayerList = convertTextToArray dataPlayer
+                let profile = filter (\x-> (regNumber x) == arg) dataPlayerList
+                if (length profile == 0) then
+                    print "Data is not found. "
+                else
+                    do
+                        let dataObject = profile!!0
+                        putStrLn ("1. Reg Number \t:"++ show ((regNumber dataObject)) ++ "\n"++
+                                 "2. Name \t:"++ (name dataObject)++ "\n"++
+                                 "3. Gender \t:"++ (gender dataObject)++ "\n"++
+                                 "4. HC \t\t:"++ show ((hc dataObject))++ "\n"++
+                                 "5. Flight \t:"++ (flight dataObject))
 
 previewData :: IO()
 previewData = do
@@ -124,6 +205,7 @@ previewData = do
                 putStrLn "======================================================"
                 putStrLn ("\t\tTotal Player : "++ show (length $ convertTextToArray dataPlayer)++ " Person")
                 putStrLn "======================================================"
+
 
 sortEntryList :: [[String]] -> [EntryList]
 sortEntryList [] = []
