@@ -407,23 +407,30 @@ orderPlayerList :: String -> IO [[Int]]
 orderPlayerList " " = return []
 orderPlayerList dataPlayer = 
     do
-
-        let flightA = (getFlightList (convertTextToArray dataPlayer) "A")
-        
+        -- Get Player List Flight A
+        let flightA = (getFlightList (convertTextToArray dataPlayer) "A") 
+        -- Calculate Number of Player Flight A, then create Array accord Number of Player
         randomIntA <- randomIntList $ length flightA
-
+        -- create tupple player flight A (only RegNumber) with array random number
+        -- sort data tupple and get only regNumber
         let orderFligthA = (sort $ createTupple randomIntA flightA) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightA = orderFligthA >>= (\y-> filter (\x-> (regNumber x) == y) flightA) 
 
+        -- Get Player List Flight B
         let flightB = (getFlightList (convertTextToArray dataPlayer) "B")
+        -- Calculate Number of Player Flight B, then create Array accord Number of Player
         randomIntB <- randomIntList $ length flightB
-
+        -- create tupple player flight B (only RegNumber) with array random number
+        -- sort data tupple and get only regNumber
         let orderFligthB = (sort $ createTupple randomIntB flightB) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightB = orderFligthB >>= (\y-> filter (\x-> (regNumber x) == y) flightB) 
 
+        -- Get Player List Flight B
         let flightC = (getFlightList (convertTextToArray dataPlayer) "C")
+        -- Calculate Number of Player Flight C, then create Array accord Number of Player
         randomIntC <- randomIntList $ length flightC
-
+        -- create tupple player flight C (only RegNumber) with array random number
+        -- sort data tupple and get only regNumber
         let orderFligthC = (sort $ createTupple randomIntC flightC) >>= (\(a,b)-> [b])
         let dataTypeOrderFlightC = orderFligthC >>= (\y-> filter (\x-> (regNumber x) == y) flightC) 
 
