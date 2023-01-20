@@ -258,30 +258,41 @@ pairingList arg = do
                     pilih <- getLine
                     case (pilih) of 
                         ("1") -> do
-                                    putStrLn "====Draw Pairing List==="
+                                    putStrLn "=========== Draw Pairing List ==============="
                                     dataPlayer <- readFile "player.txt"
-                                    let countMaxGroup = (length $ convertTextToArray dataPlayer) `div` 4   
-                                    putStrLn ("Total Group :"++ show (countMaxGroup))
-                                    -- Clear Directory -----
-                                    directoryData <- listDirectory "."
-                                    if("group" `elem` directoryData) then 
-                                        --Check if folder is not empty, then delete all file
-                                        do
-                                            putStrLn "Folder group is Exist"
-                                            filesGroup <- listDirectory "./group"
-                                            removeDirectoryWithFiles filesGroup
-                                    else 
-                                        -- if folder is not empty then create folder group
-                                        do
-                                            putStrLn "Folder group is not Exist"
-                                            createDirectory "group"
-                                    clearDrawData 0 countMaxGroup
-                                    orderPlayer <- orderPlayerList dataPlayer
-                                    drawData 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
-                                    viewPairingList
-                                    putStrLn "Press any key to continue...."
-                                    getLine
-                                    pairingList arg
+                                    putStrLn "Input minimum player per group :"
+                                    minPlayer <- getLine
+                                    let countMaxGroup = (length $ convertTextToArray dataPlayer) `div` (read minPlayer)   
+                                    putStrLn "============================================="
+                                    putStrLn ("1. Total Player \t\t: "++ show (length $ convertTextToArray dataPlayer)++ " person")
+                                    putStrLn ("2. Player per group \t\t: "++ minPlayer ++ " person")
+                                    putStrLn ("3. Total Group \t\t\t: "++ show (countMaxGroup))
+                                    putStrLn "============================================="
+                                    putStrLn "Press key `1` to continue draw. or any key to cancel"
+                                    drawChoose <- getLine
+                                    case (drawChoose) of 
+                                        ("1") -> do
+                                            -- Clear Directory -----
+                                            directoryData <- listDirectory "."
+                                            if("group" `elem` directoryData) then 
+                                                --Check if folder is not empty, then delete all file
+                                                do
+                                                    putStrLn "Folder group is Exist"
+                                                    filesGroup <- listDirectory "./group"
+                                                    removeDirectoryWithFiles filesGroup
+                                            else 
+                                                -- if folder is not empty then create folder group
+                                                do
+                                                    putStrLn "Folder group is not Exist"
+                                                    createDirectory "group"
+                                            clearDrawData 0 countMaxGroup
+                                            orderPlayer <- orderPlayerList dataPlayer
+                                            drawData 0 countMaxGroup ( orderPlayer >>= (\x-> x ++ []) )  
+                                            viewPairingList
+                                            putStrLn "Press any key to continue...."
+                                            getLine
+                                            pairingList arg
+                                        (_) -> pairingList arg
                         ("2") -> do
                                     viewPairingList
                                     putStrLn "Press any key to continue...."
@@ -294,7 +305,7 @@ viewPairingList :: IO()
 viewPairingList = do
                     putStrLn "=============== List Pairing ================="
                     dataPairing <- listDirectory "./group"
-                    printPairingList 0 dataPairing
+                    printPairingList 0 (sort dataPairing)
 
 
 printPairingList :: Int -> [String] -> IO()
