@@ -78,7 +78,25 @@ registrationPlayer arg = do
                     case (pilih) of 
                         ("1") -> do
                                     putStrLn "====Add Player==="
-                                    dataAdd <- entryData 1 0
+                                    -- dataAdd <- entryData 1 0
+
+                                    putStrLn "Insert Your Name : "
+                                    nameAdd <- getLine 
+                                    putStrLn "Insert Your Gender (Men or Ladies) : "
+                                    genderAdd <- getLine
+                                    putStrLn "***********Flight Category************"
+                                    putStrLn "Fligth A from HC 1 to 10"
+                                    putStrLn "Fligth B from HC 11 to 19"
+                                    putStrLn "Fligth C from HC 20 to 28"
+                                    putStrLn "**************************************"
+                                    putStrLn "Insert Your HC (1 - 28) :  "
+                                    hcAdd <- getLine
+                                    let flightAdd = if (read hcAdd) >=1 && (read hcAdd) <11 then "A"
+                                                    else if (read hcAdd) >=11 && (read hcAdd) <20 then "B"
+                                                    else "C"
+                                    regNumberAdd <- rollDice 
+                                    let dataAdd = (EntryList { regNumber= regNumberAdd, name = nameAdd, gender = genderAdd, hc= (read (hcAdd)), flight= flightAdd})
+
                                     putStrLn "--------Please Check your entry-----"
                                     putStrLn ("1. Reg Number \t: "++ show (regNumber dataAdd) ++"\n2. Name \t:"++ (name dataAdd)++ "\n3. Gender\t:"++ (gender dataAdd)++"\n4. HC\t\t:"++ show (hc dataAdd)++"\n5.Flight\t: "++(flight dataAdd))
                                     putStrLn "------------------------------------"
@@ -141,38 +159,6 @@ registrationPlayer arg = do
                                     writeFile "player.txt" ""
                                     registrationPlayer arg
                         (_) -> registrationPlayer arg
-
-entryData :: Int -> Int -> IO(EntryList)
-entryData mode arg = do
-                if (mode == 1 || mode == 2) then
-                    do
-                        putStrLn "Insert Your Name : "
-                        name <- getLine 
-                        putStrLn "Insert Your Gender (Men or Ladies) : "
-                        gender <- getLine
-                        putStrLn "***********Flight Category************"
-                        putStrLn "Fligth A from HC 1 to 10"
-                        putStrLn "Fligth B from HC 11 to 19"
-                        putStrLn "Fligth C from HC 20 to 28"
-                        putStrLn "**************************************"
-                        putStrLn "Insert Your HC (1 - 28) :  "
-                        hc <- getLine
-                        let flight = if (read hc) >=1 && (read hc) <10 then "A"
-                                        else if (read hc) >=11 && (read hc) <20 then "B"
-                                        else "C"
-                        if (mode == 1) then 
-                            do 
-
-                                regNumber <- rollDice 
-                                let datareturn = (EntryList { regNumber= regNumber, name = name, gender = gender, hc= (read (hc)), flight= flight})
-                                return datareturn
-                        else 
-                            do
-                                let datareturn = (EntryList { regNumber= arg, name = name, gender = gender, hc= (read (hc)), flight= flight})
-                                return datareturn
-                        
-                else
-                    return(EntryList { regNumber= 0, name = "", gender = "", hc= 0, flight= ""})
 
 changeData :: Int -> Int -> [EntryList] -> IO(String)
 changeData 1 argRegNumber arg = do
