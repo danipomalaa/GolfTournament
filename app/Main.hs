@@ -104,12 +104,14 @@ registrationPlayer arg = do
                                     previewData
                                     putStrLn "Input Reg Number : "
                                     editRegNumber <- getLine
-
+                                    profileData (read editRegNumber)
                                     dataPlayer <- readFile "player.txt"
                                     let dataPlayerList = convertTextToArray dataPlayer
 
-                                    changeData 1 (read editRegNumber) dataPlayerList
-                                    previewData
+                                    dataChange <- (changeData 1 (read editRegNumber) dataPlayerList)
+                                    print dataChange
+                                    writeFile "player.txt" dataChange
+                                    -- previewData
                                     putStrLn "Press any key to continue...."
                                     getLine
                                     registrationPlayer arg
@@ -119,14 +121,25 @@ registrationPlayer arg = do
                                     putStrLn "Input Reg Number : "
                                     editRegNumber <- getLine
 
-                                    dataPlayer <- readFile "player.txt"
-                                    let dataPlayerList = convertTextToArray dataPlayer
-                                    changeData 2 0 dataPlayerList
-                                    previewData
-                                    putStrLn "Press any key to continue...."
-                                    getLine
-                                    registrationPlayer arg
+                                    profileData (read editRegNumber)
+                                    putStrLn "are you sure delete this data? Press key `1` to Yes or any key to cancel "
+                                    deleteAction <- getLine
+                                    case (deleteAction) of 
+                                        ("1") -> do
+                                                    dataPlayer <- readFile "player.txt"
+                                                    let dataPlayerList = convertTextToArray dataPlayer
+                                                    dataChange <- (changeData 2 (read editRegNumber) dataPlayerList)
+                                                    print dataChange
+                                                    writeFile "player.txt" dataChange
+                                                    -- previewData
+                                                    putStrLn "Press any key to continue...."
+                                                    getLine
+                                                    registrationPlayer arg
+                                        (_) -> registrationPlayer arg
                         ("5") -> putStrLn "Back To Main Menu"
+                        ("6")-> do 
+                                    writeFile "player.txt" ""
+                                    registrationPlayer arg
                         (_) -> registrationPlayer arg
 
 entryData :: Int -> Int -> IO(EntryList)
@@ -161,22 +174,78 @@ entryData mode arg = do
                 else
                     return(EntryList { regNumber= 0, name = "", gender = "", hc= 0, flight= ""})
 
-changeData :: Int -> Int -> [EntryList] -> IO()
+changeData :: Int -> Int -> [EntryList] -> IO(String)
 changeData 1 argRegNumber arg = do
                                     let dataList = filter (\x-> not ((regNumber x)  == argRegNumber)) arg
-                                    dataEdit <- entryData 2 argRegNumber
-                                    let _data = (dataList ++ [dataEdit])
-                                    let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
-                                    writeFile "player.txt" dataString
-                                    print ("Edit Data RegNumber "++ (show argRegNumber) ++ " success")
+                                    let profile = (filter (\x-> (regNumber x) == argRegNumber) arg)!!0
+                                    putStrLn "=================================== "
+                                    putStrLn ("Press key `1` to change name")
+                                    putStrLn ("Press key `2` to change gender")
+                                    putStrLn ("Press key `3` to change HC")
+                                    putStrLn ("Press key `4` to change all data")
+                                    putStrLn ("Press any key to cancel.....")
+                                    putStrLn "=================================== "
+                                    changeChoose <- getLine
+                                    case (changeChoose) of
+                                        ("1") -> do
+                                                    putStrLn ("Change Name "++ (name profile)++ " to :")
+                                                    changeName <- getLine
+                                                    let dataEdit = EntryList {regNumber = (regNumber profile), name = changeName, gender = (gender profile), hc = (hc profile), flight = (flight profile)}
+                                                    let _data = (dataList ++ [dataEdit])
+                                                    let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
+                                                    return dataString
+                                        ("2") -> do  
+                                                    putStrLn ("Change Gender "++ (gender profile)++ " to :")
+                                                    changeGender <- getLine 
+                                                    let dataEdit = EntryList {regNumber = (regNumber profile), name = (name profile), gender = (changeGender), hc = (hc profile), flight = (flight profile)}
+                                                    let _data = (dataList ++ [dataEdit])
+                                                    let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
+                                                    return dataString
+                                        ("3") -> do  
+                                                    putStrLn "***********Flight Category************"
+                                                    putStrLn "Fligth A from HC 1 to 10"
+                                                    putStrLn "Fligth B from HC 11 to 19"
+                                                    putStrLn "Fligth C from HC 20 to 28"
+                                                    putStrLn "**************************************"
+                                                    putStrLn ("Change HC "++ show (hc profile) ++ " to :")
+                                                    changeHC <- getLine 
+                                                    let changeFlight = if (read changeHC) >=1 && (read changeHC) <11 then "A"
+                                                                else if (read changeHC) >=11 && (read changeHC) <20 then "B"
+                                                                else "C"
+                                                    let dataEdit = EntryList {regNumber = (regNumber profile), name = (name profile), gender = (gender profile), hc = (read changeHC), flight = changeFlight}
+                                                    let _data = (dataList ++ [dataEdit])
+                                                    let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
+                                                    return dataString
+                                        ("4") -> do
+                                                    putStrLn ("Change Name "++ (name profile)++ " to :")
+                                                    changeName <- getLine
+                                                    putStrLn ("Change Gender "++ (gender profile)++ " to :")
+                                                    changeGender <- getLine 
+                                                    putStrLn "***********Flight Category************"
+                                                    putStrLn "Fligth A from HC 1 to 10"
+                                                    putStrLn "Fligth B from HC 11 to 19"
+                                                    putStrLn "Fligth C from HC 20 to 28"
+                                                    putStrLn "**************************************"
+                                                    putStrLn ("Change HC "++ show (hc profile) ++ " to :")
+                                                    changeHC <- getLine 
+                                                    let changeFlight = if (read changeHC) >=1 && (read changeHC) <10 then "A"
+                                                                    else if (read changeHC) >=11 && (read changeHC) <20 then "B"
+                                                                    else "C"
+                                                    let dataEdit = (EntryList { regNumber= (regNumber profile), name = (changeName), gender = changeGender, hc= (read (changeHC)), flight= changeFlight})
+                                                    let _data = (dataList ++ [dataEdit])
+                                                    let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
+                                                    return dataString
+                                        (_) -> do
+                                                    let dataEdit = (EntryList { regNumber= (regNumber profile), name = (name profile), gender = (gender profile), hc= (hc profile), flight= (flight profile)})
+                                                    let _data = (dataList ++ [dataEdit])
+                                                    let dataString = (_data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
+                                                    return dataString
+                                    
 changeData 2 argRegNumber arg = do
                                     let dataList = filter (\x-> not ((regNumber x) == argRegNumber)) arg
-                                    -- saveData dataList
-                                    -- let dataString = _data >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")) 
                                     let dataString = (dataList >>= (\x-> (show (regNumber x)++" "++(removeSpaceInput (name x))++" "++ (gender x)++" "++ show (hc x)++" "++(flight x)++ "\n")))
-                                    writeFile "player.txt" dataString
-                                    print ("Delete Data RegNumber "++ (show argRegNumber) ++ " success")
-changeData _ _ [] = return()
+                                    return dataString
+changeData _ _ [] = return("")
 
 profileData :: Int -> IO()
 profileData 0 = return()
@@ -327,7 +396,9 @@ printPairingList index (x:xs) = do
 tablePairing :: Int -> [EntryList] -> IO()
 tablePairing _ [] = return()
 tablePairing index (x:xs) = do 
-                                let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" else (name x) ++ "\t\t"
+                                let namePlayer = if (length (name x) < 9) then (name x) ++ "\t\t\t" 
+                                                 else if (length (name x) >= 9  && length (name x) < 14) then (name x) ++ "\t\t"
+                                                 else  (name x) ++ "\t"
                                 putStrLn ("|0"++show (index+1)++"|"++ show (regNumber x) ++"|"++ namePlayer ++ "|"++ (gender x) ++ "\t|"++ (show (hc x))++"\t|"++ (flight x)++"\t|")
                                 tablePairing (index+1) xs
 
